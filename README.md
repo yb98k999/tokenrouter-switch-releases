@@ -1,315 +1,117 @@
 # TokenRouter Switch
 
-TokenRouter Switch is a desktop utility for signing in to TokenRouter, viewing available API keys, and applying a selected key to local AI coding agents.
+TokenRouter Switch is a desktop app for managing TokenRouter API keys and quickly applying them to local AI coding agents.
 
-The app is built with Electron, Vite, React, and TypeScript. It supports macOS and Windows packaging, and uses GitHub Releases as the public update channel.
+It helps you switch the active API key used by Claude Code, Codex, OpenCode, OpenClaw, and Hermes without manually editing local configuration files.
 
-## Features
+## What You Can Do
 
-- TokenRouter account sign-in with email/password and phone verification code.
-- Personal and organization identity switching.
-- API key list with pagination, usage/remain display, full-key reveal, and copy action.
-- Agent selection for Claude Code, Codex, OpenCode, OpenClaw, and Hermes.
-- One active key per agent across personal/organization identities.
-- Local agent config writing with `sk-` prefixed TokenRouter API keys.
-- In-app update check, download, and restart-to-update flow.
-- GitHub Releases based update metadata for manual release publishing.
+- Sign in to your TokenRouter account.
+- Switch between personal and organization identities.
+- View enabled TokenRouter API keys in one place.
+- Reveal or copy a full API key when needed.
+- Apply one API key to supported local agents.
+- Keep one active key per agent, even when switching between personal and organization identities.
+- Check for new versions directly inside the app.
+
+## Supported Sign-In Methods
+
+TokenRouter Switch supports:
+
+- Email and password sign-in.
+- Phone verification code sign-in.
+- Personal and organization identity switching after sign-in.
+
+## API Key Management
+
+The API key list shows enabled TokenRouter keys for the currently selected identity.
+
+For each key, you can:
+
+- View its name and masked key value.
+- Reveal the full key.
+- Copy the full key with the `sk-` prefix.
+- View usage and remaining quota.
+- Select which local agents should use that key.
+
+Disabled and expired keys are hidden from the list.
 
 ## Supported Agents
 
-TokenRouter Switch checks whether the corresponding local agent directory exists before applying a key. If the agent is not installed, the app shows a dialog asking the user to install it first.
+TokenRouter Switch can apply a selected TokenRouter API key to:
 
-| Agent | Local config path | Behavior |
-| --- | --- | --- |
-| Claude Code | `~/.claude/settings.json` | Writes `ANTHROPIC_BASE_URL=https://api.tokenrouter.com` and `ANTHROPIC_AUTH_TOKEN=sk-...`. Creates the file with default env values if missing. |
-| Codex | `~/.codex/config.toml`, `~/.codex/auth.json` | Ensures TokenRouter provider exists in `config.toml`, then overwrites `auth.json` with the selected `OPENAI_API_KEY`. |
-| OpenCode | macOS/Linux: `~/.config/opencode/opencode.json`; Windows: `%LOCALAPPDATA%\\opencode\\opencode.json` | Updates an existing TokenRouter provider or lets the user select a model and writes a TokenRouter provider config. |
-| OpenClaw | `~/.openclaw/openclaw.json` | Updates an existing TokenRouter provider. If missing, fetches available models, asks the user to choose one, then runs the OpenClaw CLI config commands. |
-| Hermes | `~/.hermes/config.yaml` | Updates an existing TokenRouter config. If missing, fetches available models, asks the user to choose one, then writes TokenRouter base URL, key, and model config. |
+- Claude Code
+- Codex
+- OpenCode
+- OpenClaw
+- Hermes
 
-## User Guide
+When you select an agent, the app first checks whether that agent appears to be installed locally. If it cannot find the expected local folder, it will ask you to install the agent first.
 
-1. Open TokenRouter Switch.
-2. Sign in with TokenRouter credentials.
-3. Choose `Personal` or `Organization` in the top-right identity switcher.
-4. Select an enabled API key from the list.
-5. Click one or more agent icons in the `Active Application` column.
-6. If a model selection dialog appears, choose a model and confirm.
-7. The app writes the selected key to the agent's local config and shows a success dialog.
+For agents that require a model choice, TokenRouter Switch will show a model selection dialog before applying the configuration.
 
-Disabled and expired keys are hidden from the key list.
+## Agent Switching Behavior
 
-## Security Notes
+Each supported agent can have only one active API key at a time.
 
-- API keys are fetched only when needed for reveal, copy, or agent application.
-- The app stores login session data under Electron's user data directory and uses Electron `safeStorage` when available.
-- The renderer process does not directly persist TokenRouter tokens.
-- Agent config files receive the full API key with an `sk-` prefix.
-- Do not publish private credentials, signed certificates, Apple notarization passwords, or GitHub tokens in this repository.
+For example:
 
-## Development
+- If `Claude Code` is already assigned to Key A, selecting `Claude Code` on Key B automatically moves `Claude Code` from Key A to Key B.
+- Clicking an already selected agent does not cancel it.
+- A single API key can be active for multiple agents at the same time.
 
-### Requirements
+The selected agent state is preserved locally so your choices remain visible after switching identities or reopening the app.
 
-- Node.js 22 or newer is recommended.
-- npm.
-- macOS is required to build macOS `.dmg` and `.zip` artifacts.
-- Windows is recommended for official Windows signing and packaging, although the current project can build a Windows NSIS package from macOS.
+## In-App Updates
 
-### Install
+TokenRouter Switch includes a built-in update button.
 
-```bash
-npm install
-```
+The update flow supports:
 
-### Run in development
+- Checking for new versions.
+- Downloading available updates.
+- Restarting the app to install the downloaded update.
 
-```bash
-npm run dev
-```
-
-### Test
-
-```bash
-npm test
-```
-
-### Production build
-
-```bash
-npm run build
-```
-
-This generates the Electron/Vite output under `out/`.
-
-## Packaging
-
-The app is packaged with `electron-builder`.
-
-### macOS
-
-```bash
-npm run dist:mac
-```
-
-Expected important outputs:
-
-```text
-release/TokenRouter-Switch-<version>-mac-arm64.dmg
-release/TokenRouter-Switch-<version>-mac-arm64.dmg.blockmap
-release/TokenRouter-Switch-<version>-mac-arm64.zip
-release/TokenRouter-Switch-<version>-mac-arm64.zip.blockmap
-release/latest-mac.yml
-```
-
-### Windows
-
-```bash
-npm run dist:win
-```
-
-Expected important outputs:
-
-```text
-release/TokenRouter-Switch-<version>-win-x64.exe
-release/TokenRouter-Switch-<version>-win-x64.exe.blockmap
-release/latest.yml
-```
-
-## GitHub Releases Update Channel
-
-The app checks updates from the public GitHub Releases repository:
+Updates are distributed through the public GitHub Releases channel:
 
 ```text
 yb98k999/tokenrouter-switch-releases
 ```
 
-This repository can be a release-only public repository. It does not need to contain the source code.
+Only release files are published there. The application source code does not need to be public.
 
-Current publish config:
+## Privacy and Security
 
-```json
-{
-  "provider": "github",
-  "owner": "yb98k999",
-  "repo": "tokenrouter-switch-releases",
-  "releaseType": "release"
-}
-```
+- TokenRouter Switch uses your TokenRouter login session to load your account, identities, API keys, and available models.
+- Full API keys are fetched only when needed, such as revealing, copying, or applying a key to an agent.
+- Login session data is stored locally by the desktop app.
+- API keys are written only to the selected local agent configuration when you choose to apply them.
+- The app does not require you to manually copy API keys into agent configuration files.
 
-## Manual Release Process
+## Platform Support
 
-The project does not require GitHub Actions. You can build locally and upload release assets manually.
+TokenRouter Switch is intended for:
 
-### 1. Update version
+- macOS
+- Windows
 
-Edit `package.json`:
+The first generated release includes:
 
-```json
-{
-  "version": "0.1.1"
-}
-```
-
-Use SemVer and keep the GitHub Release tag aligned with the package version:
-
-```text
-v0.1.1
-```
-
-### 2. Build artifacts
-
-```bash
-npm test
-npm run build
-npm run dist:mac
-npm run dist:win
-```
-
-### 3. Prepare upload folder
-
-Copy only the release assets required by auto-update:
-
-```bash
-VERSION=0.1.1
-rm -rf "release-upload/v$VERSION"
-mkdir -p "release-upload/v$VERSION"
-
-cp \
-  "release/TokenRouter-Switch-$VERSION-mac-arm64.dmg" \
-  "release/TokenRouter-Switch-$VERSION-mac-arm64.dmg.blockmap" \
-  "release/TokenRouter-Switch-$VERSION-mac-arm64.zip" \
-  "release/TokenRouter-Switch-$VERSION-mac-arm64.zip.blockmap" \
-  "release/TokenRouter-Switch-$VERSION-win-x64.exe" \
-  "release/TokenRouter-Switch-$VERSION-win-x64.exe.blockmap" \
-  "release/latest-mac.yml" \
-  "release/latest.yml" \
-  "release-upload/v$VERSION/"
-
-shasum -a 256 "release-upload/v$VERSION"/* > "release-upload/v$VERSION/SHA256SUMS.txt"
-```
-
-Do not upload `release/mac-arm64`, `release/win-unpacked`, or `release/builder-debug.yml`.
-
-### 4. Create GitHub Release
-
-If using GitHub CLI:
-
-```bash
-gh auth login
-gh release create "v0.1.1" "release-upload/v0.1.1"/* \
-  --repo yb98k999/tokenrouter-switch-releases \
-  --title "TokenRouter Switch v0.1.1" \
-  --notes "TokenRouter Switch v0.1.1 release."
-```
-
-If uploading through the GitHub web UI:
-
-1. Open `https://github.com/yb98k999/tokenrouter-switch-releases/releases/new`.
-2. Set the tag to `v0.1.1`.
-3. Set the release title to `TokenRouter Switch v0.1.1`.
-4. Upload all files from `release-upload/v0.1.1`.
-5. Publish the release only after all files are uploaded.
-
-The `latest.yml` and `latest-mac.yml` files must be uploaded with the installers and blockmaps. Without these metadata files, in-app updates will not work.
+- macOS Apple Silicon package.
+- Windows x64 installer.
 
 ## First Release
 
-The first generated release version is:
+Current first release version:
 
 ```text
 v0.1.0
 ```
 
-Prepared upload folder:
+Release assets are published through GitHub Releases and include the installer files required for app updates.
 
-```text
-release-upload/v0.1.0
-```
+## Notes
 
-Files:
-
-```text
-TokenRouter-Switch-0.1.0-mac-arm64.dmg
-TokenRouter-Switch-0.1.0-mac-arm64.dmg.blockmap
-TokenRouter-Switch-0.1.0-mac-arm64.zip
-TokenRouter-Switch-0.1.0-mac-arm64.zip.blockmap
-TokenRouter-Switch-0.1.0-win-x64.exe
-TokenRouter-Switch-0.1.0-win-x64.exe.blockmap
-latest-mac.yml
-latest.yml
-SHA256SUMS.txt
-```
-
-Upload command:
-
-```bash
-gh auth login
-gh release create v0.1.0 release-upload/v0.1.0/* \
-  --repo yb98k999/tokenrouter-switch-releases \
-  --title "TokenRouter Switch v0.1.0" \
-  --notes "Initial TokenRouter Switch release."
-```
-
-## Code Signing and Notarization
-
-The current local macOS build can be created without a Developer ID certificate, but official distribution should use signing and notarization.
-
-Recommended production setup:
-
-- macOS: Apple Developer ID Application certificate.
-- macOS: notarization credentials.
-- Windows: Authenticode code signing certificate.
-- Never commit certificate files or signing credentials.
-
-Unsigned builds are useful for internal testing, but users may see operating system security warnings.
-
-## Troubleshooting
-
-### Update check does not find a new version
-
-- Confirm the app is running a packaged build, not `npm run dev`.
-- Confirm the GitHub Release is public.
-- Confirm the release tag version is higher than the installed `package.json` version.
-- Confirm `latest.yml` and `latest-mac.yml` are uploaded.
-- Confirm file names inside the YAML files exactly match the uploaded asset names.
-
-### GitHub Release upload succeeds but download fails
-
-- Re-upload all installer, blockmap, and latest metadata files together.
-- Avoid editing `latest*.yml` manually unless the file names and hashes are fully understood.
-- Do not rename installer files after `electron-builder` generates them.
-
-### macOS says the app cannot be opened
-
-- The build may be unsigned or not notarized.
-- For internal testing, users may need to approve the app in macOS Privacy & Security.
-- For production, sign and notarize the app.
-
-### Agent application fails
-
-- Make sure the target agent is installed.
-- Make sure the expected config directory exists:
-  - Claude Code: `~/.claude`
-  - Codex: `~/.codex`
-  - OpenClaw: `~/.openclaw`
-  - OpenCode: `~/.config/opencode` on macOS/Linux or `%LOCALAPPDATA%\\opencode` on Windows
-  - Hermes: `~/.hermes`
-- For OpenClaw, make sure the `openclaw` command is available in PATH.
-
-## Project Structure
-
-```text
-src/main       Electron main process, auth requests, session storage, update logic, agent config writers
-src/preload    Safe IPC bridge exposed to the renderer
-src/renderer   React UI
-src/shared     Shared TypeScript types
-tests          Unit and integration-style tests
-assets         App icon assets
-release        electron-builder output
-release-upload Release-only upload folders
-```
-
-## License
-
-Proprietary. All rights reserved.
+- For best results, install the target agent before applying an API key to it.
+- Some operating systems may show a security warning for unsigned or newly released desktop apps.
+- If an update is available but cannot be installed, download the latest installer from the GitHub Releases page and install it manually.
